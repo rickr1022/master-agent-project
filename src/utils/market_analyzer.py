@@ -1,10 +1,12 @@
-# src/market_analyzer.py
-from datetime import datetime
+import logging
+from typing import Dict, List, Any, Optional
 import pandas as pd
-from risk_manager import RiskManager
+import numpy as np
+from datetime import datetime
+from src.utils.risk_manager import RiskManager  # Updated import path
 
 class MarketAnalyzer:
-    def __init__(self, config: dict = None):
+    def __init__(self, config: Dict[str, Any] = None):
         self.config = config or {}
         self.logger = self._setup_logging()
         self.indicators = {}
@@ -13,10 +15,17 @@ class MarketAnalyzer:
         self.short_ma_period = self.config.get('short_ma_period', 9)
         self.long_ma_period = self.config.get('long_ma_period', 21)
         self.risk_manager = RiskManager(self.config)
+        
+    def _setup_logging(self) -> logging.Logger:
+        logger = logging.getLogger('market_analyzer')
+        logger.setLevel(logging.INFO)
+        handler = logging.FileHandler(f'logs/market_analyzer_{datetime.now().strftime("%Y%m%d")}.log')
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+        return logger
 
-    # ... existing methods ...
-
-    def analyze_market(self, price_data: pd.DataFrame) -> dict:
+    def analyze_market(self, price_data: pd.DataFrame) -> Dict[str, Any]:
         """Perform comprehensive market analysis"""
         required_columns = ['close', 'volume']
         for col in required_columns:
@@ -67,4 +76,4 @@ class MarketAnalyzer:
                 "reason": f"Analysis error: {str(e)}"
             }
 
-    # ... existing methods ...
+    # ... rest of your existing methods ...

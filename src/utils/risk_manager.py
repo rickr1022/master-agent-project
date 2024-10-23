@@ -1,134 +1,233 @@
-# src/risk_manager.py
 import logging
+from typing import Dict, List, Any, Optional
+import pandas as pd
+import numpy as np
 from datetime import datetime
-from typing import Dict, Any, Optional
-from dataclasses import dataclass
+from src.utils.risk_manager import RiskManager
 
-@dataclass
-class Position:
-    symbol: str
-    entry_price: float
-    size: float
-    stop_loss: float
-    take_profit: float
-    entry_time: datetime
-    current_price: float = 0.0
-    unrealized_pnl: float = 0.0
-
-class RiskManager:
-    def __init__(self, config: Dict[str, Any]):
-        self.max_daily_loss = config.get('max_daily_loss', 2.0)  # 2% max daily loss
-        self.max_drawdown = config.get('max_drawdown', 15.0)     # 15% max drawdown
-        self.position_sizing = config.get('position_sizing', 1.0) # 1% risk per trade
-        self.max_position_size = config.get('max_position_size', 1000)
+class MarketAnalyzer:
+    def __init__(self, config: Dict[str, Any] = None):
+        self.config = config or {}
         self.logger = self._setup_logging()
-        self.daily_losses = 0
-        self.peak_balance = config.get('initial_balance', 500)
-        self.current_balance = self.peak_balance
-
+        self.indicators = {}
+        self.min_data_points = self.config.get('min_data_points', 20)
+        self.rsi_period = self.config.get('rsi_period', 14)
+        self.short_ma_period = self.config.get('short_ma_period', 9)
+        self.long_ma_period = self.config.get('long_ma_period', 21)
+        self.risk_manager = RiskManager(self.config)
+        
     def _setup_logging(self) -> logging.Logger:
-        logger = logging.getLogger('risk_manager')
+        logger = logging.getLogger('market_analyzer')
         logger.setLevel(logging.INFO)
-        handler = logging.FileHandler(f'logs/risk_manager_{datetime.now().strftime("%Y%m%d")}.log')
+        handler = logging.FileHandler(f'logs/market_analyzer_{datetime.now().strftime("%Y%m%d")}.log')
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         handler.setFormatter(formatter)
         logger.addHandler(handler)
         return logger
 
-    def calculate_position_size(self, account_balance: float, entry_price: float, 
-                                stop_loss: float) -> float:
-        """Calculate safe position size using Kelly Criterion"""
-        # Calculate risk amount based on account balance
-        risk_amount = account_balance * (self.position_sizing / 100)
+    def analyze_market(self, price_data: pd.DataFrame) -> Dict[str, Any]:
+        """Perform comprehensive market analysis"""
+        required_columns = ['close', 'volume']
+        for col in required_columns:
+            if col not in price_data.columns:
+                self.logger.error(f"Missing required column: {col}")
+                return {
+                    "signal": "ERROR",
+                    "confidence": 0,
+                    "reason": f"Missing required column: {col}"
+                }
 
-        # Calculate price risk
-        price_risk = abs(entry_price - stop_loss)
-        if price_risk == 0:
-            return 0
+        if len(price_data) < self.min_data_points:
+            self.logger.warning("Insufficient data points for analysis")
+            return {
+                "signal": "NEUTRAL",
+                "confidence": 0,
+                "reason": "Insufficient data"
+            }
 
-        # Calculate base position size
-        position_size = risk_amount / price_risk
+        try:
+            analysis = {
+                "trend": self.analyze_trend(price_data),
+                "momentum": self.calculate_momentum(price_data),
+                "volatility": self.calculate_volatility(price_data),
+                "volume_analysis": self.analyze_volume(price_data),
+                "timestamp": datetime.now().isoformat()
+            }
 
-        # Apply Kelly Criterion
-        kelly_percentage = self.calculate_kelly_criterion()
-        position_size *= kelly_percentage
+            # Generate final signal
+            signal = self.generate_signal(analysis)
+            analysis.update(signal)
 
-        # Apply maximum position size limit
-        position_size = min(position_size, self.max_position_size)
+            # Assess risk using RiskManager
+            risk_assessment = self.risk_manager.validate_trade({
+                'account_balance': self.risk_manager.current_balance,
+                'entry_price': price_data['close'].iloc[-1],
+                'stop_loss': price_data['close'].iloc[-1] * 0.95  # Example stop loss
+            })
+            analysis.update(risk_assessment)
 
-        self.logger.info(f"Calculated position size: {position_size}")
-        return position_size
+            return analysis
 
-    def calculate_kelly_criterion(self) -> float:
-        """Calculate Kelly Criterion for position sizing"""
-        win_rate = 0.55  # Example: 55% win rate
-        win_loss_ratio = 1.5  # Example: Average win / Average loss
+        except Exception as e:
+            self.logger.error(f"Error in market analysis: {str(e)}")
+            return {
+                "signal": "ERROR",
+                "confidence": 0,
+                "reason": f"Analysis error: {str(e)}"
+            }
 
-        # Kelly Formula: f = (p*b - q)/b
-        # where: p = win rate, q = loss rate, b = win/loss ratio
-        kelly_percentage = (win_rate * win_loss_ratio - (1 - win_rate)) / win_loss_ratio
-
-        # Use half-Kelly for more conservative sizing
-        kelly_percentage *= 0.5
-
-        return max(0, min(kelly_percentage, 1))  # Bound between 0 and 1
-
-    def validate_trade(self, trade_params: Dict[str, Any]) -> Dict[str, Any]:
-        """Validate if a trade meets risk management criteria"""
-        validation = {
-            "is_valid": False,
-            "reason": "",
-            "suggested_size": 0
+    def analyze_trend(self, data: pd.DataFrame) -> Dict[str, Any]:
+        """Analyze price trend using moving averages"""
+        prices = data['close'].values
+        
+        # Calculate moving averages
+        short_ma = self._calculate_sma(prices, self.short_ma_period)
+        long_ma = self._calculate_sma(prices, self.long_ma_period)
+        
+        # Determine trend direction and strength
+        if len(short_ma) > 0 and len(long_ma) > 0:
+            trend_strength = (short_ma[-1] - long_ma[-1]) / long_ma[-1] * 100
+            
+            if trend_strength > 1:
+                trend = "STRONG_UPTREND"
+            elif trend_strength > 0:
+                trend = "WEAK_UPTREND"
+            elif trend_strength > -1:
+                trend = "WEAK_DOWNTREND"
+            else:
+                trend = "STRONG_DOWNTREND"
+                
+            return {
+                "direction": trend,
+                "strength": abs(trend_strength),
+                "short_ma": float(short_ma[-1]),
+                "long_ma": float(long_ma[-1])
+            }
+        
+        return {
+            "direction": "NEUTRAL",
+            "strength": 0,
+            "short_ma": None,
+            "long_ma": None
         }
 
-        # Calculate current drawdown
-        current_drawdown = (self.peak_balance - self.current_balance) / self.peak_balance * 100
+    def calculate_momentum(self, data: pd.DataFrame) -> Dict[str, Any]:
+        """Calculate momentum indicators"""
+        prices = data['close'].values
+        momentum = {}
+        
+        # Calculate RSI
+        deltas = np.diff(prices)
+        gains = np.where(deltas > 0, deltas, 0)
+        losses = np.where(deltas < 0, -deltas, 0)
+        
+        avg_gain = np.mean(gains[-self.rsi_period:])
+        avg_loss = np.mean(losses[-self.rsi_period:])
+        
+        if avg_loss == 0:
+            rsi = 100
+        else:
+            rs = avg_gain / avg_loss
+            rsi = 100 - (100 / (1 + rs))
+            
+        momentum['rsi'] = rsi
+        
+        # Calculate rate of change
+        roc = ((prices[-1] / prices[-20]) - 1) * 100
+        momentum['roc'] = roc
+        
+        return momentum
 
-        # Check drawdown first (this is a more critical limit)
-        if current_drawdown >= self.max_drawdown:
-            validation["reason"] = "Maximum drawdown reached"
-            self.logger.warning(f"Drawdown limit reached: {current_drawdown}%")
-            return validation
+    def calculate_volatility(self, data: pd.DataFrame) -> Dict[str, Any]:
+        """Calculate volatility metrics"""
+        prices = data['close'].values
+        returns = np.diff(np.log(prices))
+        
+        volatility = {
+            'daily_volatility': np.std(returns) * np.sqrt(252),
+            'atr': self._calculate_atr(data),
+            'bollinger_bands': self._calculate_bollinger_bands(data)
+        }
+        
+        return volatility
 
-        # Then check daily loss limit
-        if self.daily_losses >= (self.peak_balance * self.max_daily_loss / 100):
-            validation["reason"] = "Daily loss limit reached"
-            self.logger.warning(f"Daily loss limit reached: {self.daily_losses}")
-            return validation
+    def _calculate_sma(self, data: np.ndarray, period: int) -> np.ndarray:
+        """Calculate Simple Moving Average"""
+        if len(data) < period:
+            return np.array([])
+        return np.convolve(data, np.ones(period)/period, mode='valid')
 
-        # Calculate position size
-        account_balance = trade_params.get('account_balance', 0)
-        entry_price = trade_params.get('entry_price', 0)
-        stop_loss = trade_params.get('stop_loss', 0)
+    def _calculate_atr(self, data: pd.DataFrame, period: int = 14) -> float:
+        """Calculate Average True Range"""
+        high = data['high'].values
+        low = data['low'].values
+        close = data['close'].values
+        
+        tr1 = np.abs(high[1:] - close[:-1])
+        tr2 = np.abs(low[1:] - close[:-1])
+        tr3 = high[1:] - low[1:]
+        
+        tr = np.maximum(np.maximum(tr1, tr2), tr3)
+        atr = np.mean(tr[-period:])
+        
+        return atr
 
-        if not all([account_balance, entry_price, stop_loss]):
-            validation["reason"] = "Missing required parameters"
-            return validation
+    def _calculate_bollinger_bands(self, data: pd.DataFrame, period: int = 20) -> Dict[str, float]:
+        """Calculate Bollinger Bands"""
+        prices = data['close'].values
+        sma = self._calculate_sma(prices, period)
+        
+        if len(sma) > 0:
+            std = np.std(prices[-period:])
+            upper = sma[-1] + (2 * std)
+            lower = sma[-1] - (2 * std)
+            
+            return {
+                'upper': float(upper),
+                'middle': float(sma[-1]),
+                'lower': float(lower)
+            }
+            
+        return {
+            'upper': None,
+            'middle': None,
+            'lower': None
+        }
 
-        suggested_size = self.calculate_position_size(
-            account_balance, 
-            entry_price, 
-            stop_loss
-        )
+    def analyze_volume(self, data: pd.DataFrame) -> Dict[str, Any]:
+        """Analyze volume patterns"""
+        volume = data['volume'].values
+        
+        avg_volume = np.mean(volume[-20:])
+        current_volume = volume[-1]
+        
+        volume_ratio = current_volume / avg_volume
+        
+        return {
+            'volume_ratio': volume_ratio,
+            'volume_trend': 'HIGH' if volume_ratio > 1.5 else 'LOW' if volume_ratio < 0.5 else 'NORMAL'
+        }
 
-        if suggested_size <= 0:
-            validation["reason"] = "Invalid position size calculated"
-            return validation
-
-        validation["is_valid"] = True
-        validation["suggested_size"] = suggested_size
-        return validation
-
-    def update_metrics(self, trade_result: Dict[str, Any]) -> None:
-        """Update risk metrics after a trade"""
-        pnl = trade_result.get('pnl', 0)
-        self.current_balance += pnl
-
-        if pnl < 0:
-            self.daily_losses += abs(pnl)
-
-        if self.current_balance > self.peak_balance:
-            self.peak_balance = self.current_balance
-
-        self.logger.info(f"Updated metrics - Balance: {self.current_balance}, "
-                         f"Daily Losses: {self.daily_losses}")
+    def generate_signal(self, analysis: Dict[str, Any]) -> Dict[str, Any]:
+        """Generate trading signal based on analysis"""
+        trend = analysis['trend']['direction']
+        momentum_rsi = analysis['momentum']['rsi']
+        volume_ratio = analysis['volume_analysis']['volume_ratio']
+        
+        signal = "NEUTRAL"
+        confidence = 0.0
+        
+        if trend.endswith('UPTREND') and momentum_rsi < 70:
+            signal = "BUY"
+            confidence = analysis['trend']['strength'] * 0.01
+        elif trend.endswith('DOWNTREND') and momentum_rsi > 30:
+            signal = "SELL"
+            confidence = analysis['trend']['strength'] * 0.01
+            
+        # Adjust confidence based on volume
+        confidence *= min(volume_ratio, 2.0)
+        
+        return {
+            "signal": signal,
+            "confidence": min(confidence, 1.0)
+        }

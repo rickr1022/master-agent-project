@@ -1,0 +1,20 @@
+2024-10-23 11:00:08,724 - backtester - INFO - Starting backtest with 0 data points
+2024-10-23 11:00:08,724 - backtester - ERROR - Error in backtest: 'Backtester' object has no attribute '_calculate_sharpe_ratio'
+2024-10-23 11:00:08,831 - backtester - INFO - Closed position: LONG | PNL: 2.00 | Reason: Take Profit
+2024-10-23 11:00:08,831 - backtester - INFO - Closed position: LONG | PNL: 2.00 | Reason: Take Profit
+2024-10-23 11:00:08,831 - backtester - INFO - Closed position: LONG | PNL: 2.00 | Reason: Take Profit
+2024-10-23 11:00:08,831 - backtester - INFO - Closed position: LONG | PNL: 2.00 | Reason: Take Profit
+2024-10-23 11:00:08,870 - backtester - INFO - Starting backtest with 100 data points
+2024-10-23 11:00:08,870 - backtester - INFO - Starting backtest with 100 data points
+2024-10-23 11:00:08,870 - backtester - INFO - Starting backtest with 100 data points
+2024-10-23 11:00:08,870 - backtester - INFO - Starting backtest with 100 data points
+2024-10-23 11:00:08,870 - backtester - INFO - Starting backtest with 100 data points
+2024-10-23 11:00:08,870 - backtester - INFO - Starting backtest with 100 data points
+2024-10-23 11:00:08,870 - backtester - INFO - Starting backtest with 100 data points
+2024-10-23 11:00:08,874 - backtester - ERROR - Error in backtest: 'Backtester' object has no attribute '_log_progress'
+2024-10-23 11:00:08,874 - backtester - ERROR - Error in backtest: 'Backtester' object has no attribute '_log_progress'
+2024-10-23 11:00:08,874 - backtester - ERROR - Error in backtest: 'Backtester' object has no attribute '_log_progress'
+2024-10-23 11:00:08,874 - backtester - ERROR - Error in backtest: 'Backtester' object has no attribute '_log_progress'
+2024-10-23 11:00:08,874 - backtester - ERROR - Error in backtest: 'Backtester' object has no attribute '_log_progress'
+2024-10-23 11:00:08,874 - backtester - ERROR - Error in backtest: 'Backtester' object has no attribute '_log_progress'
+2024-10-23 11:00:08,874 - backtester - ERROR - Error in backtest: 'Backtester' object has no attribute '_log_progress'
