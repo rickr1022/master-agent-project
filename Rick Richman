@@ -1,0 +1,44 @@
+MallocNanoZone=0
+USER=rickrichman
+COMMAND_MODE=unix2003
+__CFBundleIdentifier=com.microsoft.VSCode
+PATH=/Library/Frameworks/Python.framework/Versions/3.12/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/Frameworks/Python.framework/Versions/3.12/bin:/usr/local/sbin
+LOGNAME=rickrichman
+SSH_AUTH_SOCK=/private/tmp/com.apple.launchd.gJvc9eWpb2/Listeners
+HOME=/Users/rickrichman
+SHELL=/bin/zsh
+TMPDIR=/var/folders/d9/d7ccm36d2nx9h9rpskr589p80000gn/T/
+__CF_USER_TEXT_ENCODING=0x1F5:0x0:0x0
+XPC_SERVICE_NAME=0
+XPC_FLAGS=0x0
+ORIGINAL_XDG_CURRENT_DESKTOP=undefined
+SHLVL=1
+PWD=/Users/rickrichman/Documents/Development/master-agent-project
+OLDPWD=/Users/rickrichman/Documents/Development/master-agent-project
+HOMEBREW_PREFIX=/usr/local
+HOMEBREW_CELLAR=/usr/local/Cellar
+HOMEBREW_REPOSITORY=/usr/local/Homebrew
+INFOPATH=/usr/local/share/info:/usr/local/share/info:
+COINBASE_API_SECRET=-----BEGIN EC PRIVATE 
+
+KEY-----\nMHcCAQEEIPe7IY+4cSq1PiY+6+r98zwoR3Qi1H3yiD01V9s4/yK2oAoGCCqGSM49\nAwE$
+
+EC PRIVATE KEY-----\n
+TERM_PROGRAM=vscode
+TERM_PROGRAM_VERSION=1.93.1
+LANG=en_US.UTF-8
+COLORTERM=truecolor
+GIT_ASKPASS=/Applications/Visual Studio Code.app/Contents/Resources/app/extensions/git/dist/askpass.sh
+VSCODE_GIT_ASKPASS_NODE=/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin)
+VSCODE_GIT_ASKPASS_EXTRA_ARGS=
+VSCODE_GIT_ASKPASS_MAIN=/Applications/Visual Studio Code.app/Contents/Resources/app/extensions/git/dist/askpass-main.js
+VSCODE_GIT_IPC_HANDLE=/var/folders/d9/d7ccm36d2nx9h9rpskr589p80000gn/T/vscode-git-5ff5352d6d.sock
+VSCODE_INJECTION=1
+ZDOTDIR=/Users/rickrichman
+USER_ZDOTDIR=/Users/rickrichman
+TERM=xterm-256color
+_=/usr/bin/python3
+SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
+CPATH=/usr/local/include
+LIBRARY_PATH=/usr/local/lib
+MANPATH=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/share/man:/Library/Developer/CommandLineTools/usr/share/man:/Library/Developer/CommandLineTools/Toolchains/XcodeDefault.xctoolchain/usr/share/man:
