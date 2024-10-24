@@ -1,4 +1,4 @@
-echo "# Python
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -11,4 +11,22 @@ logs/
 .dylibs/
 dist/
 build/
-*.egg-info/" > .gitignore
+*.egg-info/
+.venv
+ENV/
+*.pyc
+.pytest_cache/
+*.so
+.Python
+
+# IDE specific
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Project specific
+logs/
+data/
+*.log
