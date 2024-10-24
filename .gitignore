@@ -1,0 +1,14 @@
+echo "# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.DS_Store
+venv/
+logs/
+.env
+*.pyc
+*.dylib
+.dylibs/
+dist/
+build/
+*.egg-info/" > .gitignore
