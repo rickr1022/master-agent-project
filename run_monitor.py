@@ -1,5 +1,5 @@
-from src.utils.btc_monitor import main
 import asyncio
+from src.utils.btc_monitor import main
 
 if __name__ == "__main__":
     try:

@@ -2,31 +2,30 @@
 __pycache__/
 *.py[cod]
 *$py.class
-.DS_Store
+.pytest_cache/
+*.egg-info/
+
+# Virtual Environment
 venv/
+.venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
 logs/
-.env
-*.pyc
-*.dylib
-.dylibs/
+*.log
+
+# Build
 dist/
 build/
 *.egg-info/
-.venv
-ENV/
-*.pyc
-.pytest_cache/
-*.so
-.Python
 
-# IDE specific
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
+# System
+.DS_Store
+.env
 
 # Project specific
-logs/
-data/
-*.log
+tests/logs/
